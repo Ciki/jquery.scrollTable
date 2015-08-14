@@ -1,0 +1,19 @@
+{
+  "name": "jquery.scrollTable",
+  "description": "Make table body scrollable using jQuery.",
+  "homepage": "https://github.com/Ciki/jquery.scrollTable",
+  "main": [
+    "./jquery.scrollTable.js"
+  ],
+  "ignore": [
+    "**/.*",
+    "README.md"
+  ],
+  "dependencies": {
+    "jquery": ">=1.9"
+  },
+  "keywords": [
+    "browser", "jquery", "tbody", "table",
+    "scrolling", "scroll", "scrollable"
+  ]
+}
