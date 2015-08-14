@@ -1,0 +1,39 @@
+// based on http://jsfiddle.net/Ciki/CrSpu/5970/
+.table-scrollable {
+	/*width: 100%;   Optional */
+
+	tbody, thead { display: block; }
+
+	tbody {
+		max-height: 100px;
+		overflow-y: auto;
+		overflow-x: hidden;
+	}
+
+	td, th {
+		/* white-space: nowrap; */
+	}
+
+	tbody td:last-child, thead th:last-child {
+		border-right: none;
+	}
+
+	// reset double borders
+	// strong selectors to beat TwBs css
+	tbody {
+		& > tr:first-child > td {
+			border-top: none;
+		}
+		& > tr:last-child > td {
+			border-bottom: none;
+		}
+		& > tr > td:first-child {
+			border-left: none;
+		}
+	}
+	thead {
+		& > tr > th:first-child {
+			border-left: none;
+		}
+	}
+}
