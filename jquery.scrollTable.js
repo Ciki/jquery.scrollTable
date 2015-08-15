@@ -39,12 +39,12 @@
 		$tables.each(function (i, table) {
 			var $table = $(table);
 			var $body = $table.find('tbody'),
+					bodyW = parseInt($body.css('width')),
 					$bodyRows = $body.find('tr'),
 					$trFirst = $bodyRows.eq(0),
 					$bodyCells = $trFirst.children(),
 					numberOfCells = $bodyCells.length,
 					$headCells = $table.find('thead tr').children(),
-					tableW = parseInt($table.css('width')),
 					cellWidthAdjustment = 0, // int, how many pixels needs to be added to every cell to fill whole row
 					scrollbarWidth = 20; // int, in pixels
 
@@ -59,8 +59,8 @@
 			$headCells.width('auto');
 			$bodyCells.width('auto');
 
-			// width difference between $table & $trFirst used to adjust cell widths to fit 100% table width
-			var widthDiff = tableW - parseInt($trFirst.css('width'));
+			// width difference between table body & first row used to adjust cell widths to fit 100% table width
+			var widthDiff = bodyW - parseInt($trFirst.css('width'));
 			if (widthDiff) {
 				cellWidthAdjustment = Math.floor(widthDiff / numberOfCells);
 			}
@@ -75,7 +75,7 @@
 				// compute width for last cell to fill whole row
 				if (i === numberOfCells - 1) {
 					tdNewW =
-							thNewW = tableW - totalTdW;
+							thNewW = bodyW - totalTdW;
 					// subtract scrollbarWidth from td:last width if isBodyScrollable
 					if (isBodyScrollable) {
 						tdNewW -= scrollbarWidth;
