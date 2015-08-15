@@ -6,8 +6,7 @@
     "./jquery.scrollTable.js"
   ],
   "ignore": [
-    "**/.*",
-    "README.md"
+    "**/.*"
   ],
   "dependencies": {
     "jquery": ">=1.9"
