@@ -9,6 +9,16 @@
  * Project home:
  *   http://www.github.com/Ciki/jquery.scrollTable
  *
+ * Usage:
+ *  $('.table-scrollable').scrollTable();
+ *
+ *	you can also specify preferred width on th elements
+ *	using html attribute width or inline style like:
+ *	<th width="100"> or <th style="width:100px">
+ *
+ *	This plugin stores some data on html elements
+ *	using dataset with prefix `jst` === jquery scroll table
+ *
  */
 
 /**
@@ -38,57 +48,97 @@
 	function _makeTablesScrollable($tables) {
 		$tables.each(function (i, table) {
 			var $table = $(table);
-			var $body = $table.find('tbody'),
-					bodyW = parseInt($body.css('width')),
-					$bodyRows = $body.find('tr'),
-					$trFirst = $bodyRows.eq(0),
-					$bodyCells = $trFirst.children(),
-					numberOfCells = $bodyCells.length,
-					$headCells = $table.find('thead tr').children(),
+			var $tbody = $table.find('tbody'),
+					tbodyW = parseInt($tbody.css('width')),
+					$tbodyRows = $tbody.find('tr'),
+					$trFirst = $tbodyRows.eq(0),
+					$tbodyCells = $trFirst.children(),
+					numberOfCells = $tbodyCells.length, // number of columns
+					numberOfModifiableWidthCells = numberOfCells, // number of columns with no preferred width defined
+					isInitialized = $table.data('jstInitialized') || false, // has scrollTable been initialized?
+					$theadCells = $table.find('thead tr').children(),
 					cellWidthAdjustment = 0, // int, how many pixels needs to be added to every cell to fill whole row
 					scrollbarWidth = 20; // int, in pixels
 
+			// initialize => set preferred widths if present
+			if (!isInitialized) {
+				$theadCells.each(function () {
+					var $el = $(this);
+					var preferredWidth = parseInt($el.prop('style').width || $el.attr('width'));
+					if (preferredWidth) {
+						numberOfModifiableWidthCells--;
+					}
+					$el.data('jstPreferredWidth', preferredWidth);
+				});
+				$table.data('jstInitialized', true);
+				$table.data('jstModifiableWidthColumnsNumber', numberOfModifiableWidthCells);
+			} else {
+				numberOfModifiableWidthCells = $table.data('jstModifiableWidthColumnsNumber');
+			}
+
+
 			// is tbody scrollable?
 			var bodyContentH = 0;
-			$bodyRows.each(function () {
+			$tbodyRows.each(function () {
 				bodyContentH += $(this).height();
 			});
-			var isBodyScrollable = $body.height() < bodyContentH;
+			var isBodyScrollable = $tbody.height() < bodyContentH;
 
-			//reset cell widths so widthDiff can be reliably computed
-			$headCells.width('auto');
-			$bodyCells.width('auto');
 
-			// width difference between table body & first row used to adjust cell widths to fit 100% table width
-			var widthDiff = bodyW - parseInt($trFirst.css('width'));
+			// reset both theady & tbody cell widths so widthDiff can be reliably computed
+			// use preferredWidth if specified, defaults to 'auto'
+			$tbodyCells.each(function (i, v) {
+				var $td = $(v),
+						$th = $theadCells.eq(i),
+						thPreferredW = $th.data('jstPreferredWidth'),
+						w = thPreferredW || 'auto';
+				$th.css('width', w);
+				$td.css('width', w);
+			});
+
+
+			// compute width difference between tbody & first row,
+			// used to adjust cell widths to fit 100% table width
+			var widthDiff = tbodyW - parseInt($trFirst.css('width'));
 			if (widthDiff) {
-				cellWidthAdjustment = Math.floor(widthDiff / numberOfCells);
+				cellWidthAdjustment = Math.floor(widthDiff / numberOfModifiableWidthCells);
 			}
+
 
 			// Set the width of thead & tbody columns
 			var totalTdW = 0;
-			$bodyCells.each(function (i, v) {
+			$tbodyCells.each(function (i, v) {
 				var $td = $(v),
 						tdW = parseInt($td.css('width')),
+						$th = $theadCells.eq(i),
+						thPreferredW = $th.data('jstPreferredWidth'),
 						tdNewW = 0,
 						thNewW = 0;
+
 				// compute width for last cell to fill whole row
 				if (i === numberOfCells - 1) {
-					tdNewW =
-							thNewW = bodyW - totalTdW;
+					if (thPreferredW) {
+						tdNewW = thNewW = thPreferredW;
+					} else {
+						tdNewW = thNewW = tbodyW - totalTdW;
+					}
 					// subtract scrollbarWidth from td:last width if isBodyScrollable
 					if (isBodyScrollable) {
 						tdNewW -= scrollbarWidth;
 					}
 				} else {
-					tdNewW =
-							thNewW = tdW + cellWidthAdjustment;
+					if (thPreferredW) {
+						tdNewW = thNewW = thPreferredW;
+
+					} else {
+						tdNewW = thNewW = tdW + cellWidthAdjustment;
+					}
 				}
 
 				totalTdW += tdNewW;
 
 				$td.css('width', tdNewW);
-				$headCells.eq(i).css('width', thNewW);
+				$th.css('width', thNewW);
 			});
 		});
 	}
